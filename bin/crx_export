@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+$: << File.dirname(__FILE__) + "/../lib"
+
+require 'optparse'
+require 'adobe_crx'
+
+options = {}
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: crx_export [options]"
+
+  opts.on("-h", "--host HOSTNAME", "crx HOSTNAME") do |hostname|
+    options[:host] = hostname
+  end
+  
+  opts.on("-p", "--port PORT", Float, "crx PORT") do |port|
+    options[:port] = port.to_i
+  end
+  
+  opts.on("-u", "--username USERNAME", "crx USERNAME") do |username|
+    options[:username] = username
+  end
+  
+  opts.on("-c", "--password PASSWORD", "crx PASSWORD") do |password|
+    options[:password] = password
+  end
+  
+  opts.on("-n", "--name EXPORT_NAME", "the name of the export") do |export_name|
+    options[:export_name] = export_name
+  end
+  
+  opts.on("-r", "--root ROOT_PATH", "the root path of the export") do |root_path|
+    options[:root_path] = root_path
+  end
+  
+  opts.on("-d", "--directory EXPORT_DIRECTORY", "the directory to export to") do |export_directory|
+    options[:export_directory] = export_directory
+  end
+end
+parser.parse!
+
+[ :host, :port, :username, :password, :export_name, :root_path, :export_directory ].each do |o|
+  if !options[o]
+    puts parser.help
+    exit 1
+  end
+end
+
+
+client = AdobeCRX::Client.new options[:host], options[:port], options[:username], options[:password]
+upm = AdobeCRX::UberPackageManager.new client
+json = upm.generate_uber_package_definition options[:export_name], options[:root_path]
+File.open "#{options[:export_directory]}/manifest.json", 'w' do |f|
+  f.write(json)
+end
+upm.export_uber_package json, options[:export_directory]
