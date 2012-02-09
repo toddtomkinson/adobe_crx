@@ -43,10 +43,6 @@ command :generate_uber_manifest do |c|
     validate_global_options c, options
     output_file = options.output_file
     if output_file
-      if !File.writable? output_file
-        say_error "unable to write to output file #{output_file}"
-        exit 1
-      end
       if File.exists? output_file
         overwrite = ask("File #{output_file} exists. Overwrite? (Y/N)")
         if overwrite == 'Y'
