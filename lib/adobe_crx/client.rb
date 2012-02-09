@@ -97,7 +97,7 @@ class AdobeCRX::Client
     req.basic_auth(@username, @password)
     params = Hash.new
     params['packageName'] = package.name
-    params['groupName'] = 'cws-util-crx-exports'
+    params['groupName'] = 'automated-exports'
     req.set_form_data(params)
     create_result = nil
     Net::HTTP.start(@host, @port) do |http|
@@ -114,7 +114,7 @@ class AdobeCRX::Client
       '_charset_' => 'utf-8',
       'path' => create_result['path'],
       'packageName' => package.name,
-      'groupName' => 'cws-util-crx-exports',
+      'groupName' => 'automated-exports',
       'filter' => package.filters.to_json
     )
     req.basic_auth(@username, @password)
