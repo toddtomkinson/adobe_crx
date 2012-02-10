@@ -53,7 +53,7 @@ class AdobeCRX::Client
   end
   
   def upload_package(package_file)
-    results = PackageUtils.get_package_properties(package_file)
+    results = AdobeCRX::PackageUtils.get_package_properties(package_file)
     File.open(package_file) do |package|
       req = Net::HTTP::Post::Multipart.new(
         '/crx/packmgr/service/.json/?cmd=upload', 
@@ -139,7 +139,7 @@ class AdobeCRX::Client
     end
     
     #download the package
-    file_path = dest_file ? dest_file : "#{Dir.tmpdir}/#{package_name}"
+    file_path = dest_file ? dest_file : "#{Dir.tmpdir}/#{package.name}"
     req = Net::HTTP::Get.new(create_result['path'])
     req.basic_auth(@username, @password)
     Net::HTTP.start(@host, @port) do |http|

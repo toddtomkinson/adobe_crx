@@ -34,12 +34,24 @@ class AdobeCRX::UberPackageManager
     #export the packages to the uber_dir 
     uber.packages.each do |package|
       puts "exporting #{package.name}..."
-      @client.export_package(package, "#{uber_dir}/#{package.name}.zip")
+      @client.export_package package, "#{uber_dir}/#{package.name}.zip"
     end
   end
   
-  def import_uber_package(uber_package_dir, uber_package_definition = nil)
+  def import_uber_package(uber_package_definition, uber_package_dir)
+    manifest_file = File.open(uber_package_definition, "rb")
+    uber = AdobeCRX::UberPackage.from_json manifest_file.read
     
+    #import the packages to the target crx instance
+    uber.packages.each do |package|
+      puts "importing #{package.name}..."
+      p_file = "#{uber_package_dir}/#{package.name}.zip"
+      if File.exist? p_file
+        @client.import_package p_file
+      else
+        puts "ERROR: package does not exist at '#{p_file}'"
+      end 
+    end
   end
   
   private
