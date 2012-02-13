@@ -9,6 +9,17 @@ require 'tmpdir'
 # monkey-patch so that we can take advantage of the innards of Net::DAV
 module Net 
   class DAV
+    class NetHttpHandler
+      alias_method :handle_request_original, :handle_request
+      
+      def handle_request(req, headers, limit = MAX_REDIRECTS, &block)
+        if @user && @pass
+          req.basic_auth @user, @pass
+        end
+        handle_request_original(req, headers, limit, &block)
+      end
+    end
+    
     def propfind_size(path)
       headers = {'Depth' => 'infinity'}
       body = '<?xml version="1.0" encoding="utf-8"?><DAV:propfind xmlns:DAV="DAV:"><DAV:prop><DAV:getcontentlength/></DAV:prop></DAV:propfind>'
@@ -180,33 +191,35 @@ class AdobeCRX::Client
   
   #content methods
   def get_child_resources(path)
-    dav = Net::DAV.new("http://#{@host}:#{@port}", :curl => false)
-    dav.credentials(@username, @password)
+    if !@dav
+      @dav = Net::DAV.new("http://#{@host}:#{@port}", :curl => false)
+      @dav.credentials(@username, @password)
+    end
     
     resources = Array.new
-    dav.find(path,:recursive=>false,:suppress_errors=>true) do | item |
+    @dav.find(path,:recursive=>false,:suppress_errors=>true) do | item |
       resources << item.uri.path.sub(/\/$/, '')
     end
     resources
   end
   
-  def get_node_structure(path, parent = nil, dav = nil)
-    if !dav
-      dav = Net::DAV.new("http://#{@host}:#{@port}", :curl => false)
-      dav.credentials(@username, @password)
+  def get_node_structure(path, parent = nil)
+    if !@dav
+      @dav = Net::DAV.new("http://#{@host}:#{@port}", :curl => false)
+      @dav.credentials(@username, @password)
     end
     node = AdobeCRX::Node.new path
     if parent
       parent.children << node
     end
     begin
-      node.size = dav.propfind_size("#{path}/jcr:content")
+      node.size = @dav.propfind_size("#{path}/jcr:content")
     rescue Exception
       #nothing
     end
-    dav.find(path,:recursive=>false,:suppress_errors=>true) do | item |
+    @dav.find(path,:recursive=>false,:suppress_errors=>true) do | item |
       if path != item.uri.path
-        get_node_structure(item.uri.path.sub(/\/$/, ''), node, dav)
+        get_node_structure(item.uri.path.sub(/\/$/, ''), node)
       end
     end
     node
