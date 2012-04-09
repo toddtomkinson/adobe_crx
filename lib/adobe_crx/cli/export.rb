@@ -1,6 +1,6 @@
 command :export do |c|
   c.syntax = 'crx export [options] <root path>'
-  c.description = 'Exports a package a simple package for the given root path'
+  c.description = 'Exports a simple package for the given root path'
   c.option "--output_file OUTPUT_FILE", String, "package output file"
   c.action do |args, options|
     if !args[0]
