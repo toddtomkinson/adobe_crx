@@ -85,6 +85,7 @@ class AdobeCRX::Client
     req.basic_auth(@username, @password)
     result = Hash.new
     Net::HTTP.start(@host, @port) do |http|
+      http.read_timeout = 500
       response = http.request(req)
       result.merge! JSON.parse(response.body)
     end
@@ -125,6 +126,7 @@ class AdobeCRX::Client
       '_charset_' => 'utf-8',
       'path' => create_result['path'],
       'packageName' => package.name,
+      'description' => '',
       'groupName' => 'automated-exports',
       'filter' => package.filters.to_json
     )
