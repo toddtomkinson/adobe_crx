@@ -4,6 +4,7 @@ module AdobeCRX
   end
 end
 
+require 'adobe_crx/version'
 require 'adobe_crx/client'
 require 'adobe_crx/node'
 require 'adobe_crx/package'

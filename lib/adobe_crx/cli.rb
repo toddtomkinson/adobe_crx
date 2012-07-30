@@ -3,7 +3,7 @@ require 'commander/import'
 require 'adobe_crx'
 
 program :name, 'crx'
-program :version, '0.0.1'
+program :version, ADOBE_CRX_VERSION
 program :description, 'Command line tools for Adobe CRX.'
 
 global_option "--host HOSTNAME", String, "crx HOSTNAME"
