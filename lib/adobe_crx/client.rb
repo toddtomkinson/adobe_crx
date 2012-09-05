@@ -192,6 +192,27 @@ class AdobeCRX::Client
   end
   
   #content methods
+  def get_resource(uri)
+    req = Net::HTTP::Get.new(uri.gsub(' ', '%20'))
+    req.basic_auth(@username, @password)
+    Net::HTTP.start(@host, @port) do |http|
+      http.request(req).body
+    end
+  end
+
+  def delete_resources(uris)
+    req = Net::HTTP::Post.new(uris[0].gsub(' ', '%20'))
+    req.basic_auth(@username, @password)
+    params = Hash.new
+    params[':operation'] = 'delete'
+    params[':applyTo'] = uris
+    req.set_form_data(params)
+    Net::HTTP.start(@host, @port) do |http|
+      http.read_timeout = 500
+      http.request(req).code
+    end
+  end
+
   def get_child_resources(path)
     if !@dav
       @dav = Net::DAV.new("http://#{@host}:#{@port}", :curl => false)
